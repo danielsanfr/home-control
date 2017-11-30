@@ -54,19 +54,41 @@ ApplicationWindow {
                     source = ""
                 }
                 onClicked: {
-                    source = ""
-                    deviceDetail.device = null
+                    if (deviceScreen.popDeviceOptions()) {
+                        titleLabel.reset()
+                        source = "qrc:/assets/ic_close_white_64dp.png"
+                    } else {
+                        source = ""
+                        deviceScreen.device = null
+                    }
                 }
             }
 
-            Item {
+            Label {
+                id: titleLabel
+                visible: closeButton.visible
+                font.bold: true
+                font.pointSize: 12
+                Layout.leftMargin: 8
+                Layout.rightMargin: 8
                 Layout.fillWidth: true
+                Component.onCompleted: {
+                    reset()
+                }
+                function reset() {
+                    text = qsTr("Device details")
+                }
             }
 
             ToolButton {
                 text: qsTr("Open")
                 visible: closeButton.visible
                 Layout.rightMargin: 8
+                onClicked: {
+                    deviceScreen.pushDeviceOptions()
+                    titleLabel.text = deviceScreen.device["friendlyName"]
+                    closeButton.source = "qrc:/assets/ic_arrow_back_white_64dp.png"
+                }
             }
         }
     }
@@ -91,7 +113,9 @@ ApplicationWindow {
                     model: homeScreen.devices
                     delegate: DeviceItem {
                         onClicked: {
-                            deviceDetail.device = modelData
+                            titleLabel.reset()
+                            deviceScreen.popDeviceOptions()
+                            deviceScreen.device = modelData
                             closeButton.source = "qrc:/assets/ic_close_white_64dp.png"
                         }
                     }
@@ -104,39 +128,18 @@ ApplicationWindow {
                 }
             }
 
-
             Pane {
                 Material.elevation: 6
                 Layout.fillHeight: true
                 Layout.fillWidth: true
-                Layout.margins: 4
+                Layout.leftMargin: 4
+                Layout.topMargin: 8
+                Layout.rightMargin: 8
+                Layout.bottomMargin: 8
 
-                ScrollView {
+                DeviceScreen {
+                    id: deviceScreen
                     anchors.fill: parent
-                    clip: true
-                    visible: deviceDetail.device !== undefined && deviceDetail.device !== null
-
-                    DeviceDetail {
-                        id: deviceDetail
-                    }
-                }
-
-                ColumnLayout {
-                    anchors.centerIn: parent
-                    visible: deviceDetail.device === undefined || deviceDetail.device === null
-
-                    Image {
-                        source: "qrc:/assets/icons8-headstone-96.png"
-                        Layout.alignment: Qt.AlignHCenter
-                    }
-
-                    Label {
-                        text: qsTr("Select a device from the\nlist on the side.")
-                        font.pointSize: 14
-                        font.bold: true
-                        horizontalAlignment: Qt.AlignHCenter
-                        Layout.alignment: Qt.AlignHCenter
-                    }
                 }
             }
         }

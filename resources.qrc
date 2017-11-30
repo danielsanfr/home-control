@@ -10,5 +10,7 @@
         <file>qml/DeviceDetail.qml</file>
         <file>qml/SingleDetail.qml</file>
         <file>qml/ImageButton.qml</file>
+        <file>qml/DeviceOptions.qml</file>
+        <file>qml/DeviceScreen.qml</file>
     </qresource>
 </RCC>

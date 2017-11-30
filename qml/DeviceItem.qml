@@ -33,7 +33,7 @@ ItemDelegate {
                     Layout.fillWidth: true
                 }
                 Label {
-                    text: modelData["uuid"]
+                    text: modelData["modelDescription"]
                     elide: "ElideRight"
                     wrapMode: "WordWrap"
                     maximumLineCount: 2
