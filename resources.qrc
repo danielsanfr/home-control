@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qtquickcontrols2.conf</file>
+        <file>qml/main.qml</file>
+        <file>assets/icons8-computer-96.png</file>
+        <file>assets/icons8-headstone-96.png</file>
+        <file>assets/ic_close_white_64dp.png</file>
+        <file>assets/ic_arrow_back_white_64dp.png</file>
+        <file>qml/DeviceItem.qml</file>
+        <file>qml/DeviceDetail.qml</file>
+        <file>qml/SingleDetail.qml</file>
+        <file>qml/ImageButton.qml</file>
+    </qresource>
+</RCC>
