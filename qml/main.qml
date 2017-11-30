@@ -31,7 +31,7 @@ ApplicationWindow {
                 }
 
                 Label {
-                    text: "11:10"
+                    text: homeScreen.currentTime
                     font.bold: true
                     font.pointSize: 10
                     Layout.rightMargin: 8
