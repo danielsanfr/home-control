@@ -24,6 +24,19 @@ ApplicationWindow {
                     font.bold: true
                     font.pointSize: 12
                     Layout.leftMargin: 8
+
+                    MouseArea {
+                        property int count: 5
+                        anchors.fill: parent
+                        onClicked: {
+                            count -= 1
+                            if (count > 0) {
+                                ToolTip.show("Aperte mais " + count + " para fechar", 500)
+                            } else {
+                                Qt.quit()
+                            }
+                        }
+                    }
                 }
 
                 Item {
@@ -93,10 +106,6 @@ ApplicationWindow {
         }
     }
 
-    ApplicationWindow {
-        id: testWindow
-    }
-
     Page {
         anchors.fill: parent
 
@@ -129,13 +138,13 @@ ApplicationWindow {
             }
 
             Pane {
-                Material.elevation: 6
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 Layout.leftMargin: 4
                 Layout.topMargin: 8
                 Layout.rightMargin: 8
                 Layout.bottomMargin: 8
+                Material.elevation: 6
 
                 DeviceScreen {
                     id: deviceScreen
