@@ -2,7 +2,7 @@ QT       += core quick network xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = HomeControl
+TARGET = homecontrol
 TEMPLATE = app
 CONFIG += c++11
 
