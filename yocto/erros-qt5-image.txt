@@ -1,0 +1,3 @@
+WARNING: libpng-native-1.6.31-r0 do_fetch: Failed to fetch URL http://downloads.sourceforge.net/project/libpng/libpng16/1.6.31/libpng-1.6.31.tar.xz, attempting MIRRORS if available
+WARNING: linux-firmware-1_0.0+gitAUTOINC+a61ac5cf83-r0 do_fetch: Failed to fetch URL https://git.kernel.org/cgit/linux/kernel/git/iwlwifi/linux-firmware.git/plain/iwlwifi-8000C-19.ucode;name=iwlwifi-19, attempting MIRRORS if available
+

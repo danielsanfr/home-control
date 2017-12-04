@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Building Raspberry Pi Systems with Yocto</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="Building%20Raspberry%20Pi%20Systems%20with%20Yocto_files/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="Building%20Raspberry%20Pi%20Systems%20with%20Yocto_files/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="http://www.jumpnowtek.com/">Jumpnow Technologies</a></h1>
+            <a class="extra" href="http://www.jumpnowtek.com/">home</a>
+            <a class="extra" href="http://www.jumpnowtek.com/code">code</a>
+            <a class="extra" href="http://www.jumpnowtek.com/consulting">consulting</a>
+            <a class="extra" href="http://www.jumpnowtek.com/contact">contact</a>
+          </div>
+
+          <h2>Building Raspberry Pi Systems with Yocto</h2>
+<p class="meta">29 Nov 2017</p>
+
+<div class="post">
+<p>This post is about building Linux systems for <a href="https://www.raspberrypi.org/">Raspberry Pi</a> boards using tools from the <a href="https://www.yoctoproject.org/">Yocto Project</a>.</p>
+
+<p>Yocto is a set of tools for building a custom embedded Linux 
+distribution. The systems are usually targeted for a particular 
+application like a commercial product.</p>
+
+<p>If you are looking for a general purpose development system with 
+access to pre-built packages, I suggest you stick with a more 
+user-friendly distribution like <a href="https://www.raspbian.org/">Raspbian</a>.</p>
+
+<p>Yocto uses what it calls <strong>meta-layers</strong> to define the 
+configuration for a system build. Within each meta-layer are recipes, 
+classes and conf files that support the primary build tool, a python 
+framework called <strong>bitbake</strong>. </p>
+
+<p>The Yocto system, while very powerful, does have a substantial 
+learning curve and you may want to look at another popular tool for 
+building embedded systems [Buildroot][buildroot].</p>
+
+<p>I have created a custom layer for the RPi boards called <a href="https://github.com/jumpnow/meta-rpi">meta-rpi</a>.</p>
+
+<p>The systems build from this layer use the same GPU firmware, linux 
+kernel and include the same dtb overlays as the official Raspbian 
+systems. No hardware functionality (compared to Raspbian) is lost using 
+Yocto. It is only the <strong>userland</strong> software that differs and that is configurable by you.</p>
+
+<p>There are a some example <strong>images</strong> in <a href="https://github.com/jumpnow/meta-rpi">meta-rpi</a> that support the programming languages and tools that I use in my own projects.</p>
+
+<p>I often use meta-rpi as the starting point for customer projects, but moved to another repository.</p>
+
+<p>I use meta-rpi for my experiments.</p>
+
+<p>My systems use <strong>sysvinit</strong>, but Yocto supports <strong>systemd</strong> if you would rather use that. A lot of my customers do.</p>
+
+<p>If you are <a href="http://www.qt.io/">Qt5</a> developer then you will appreciate that the RPi comes with working <strong>OpenGL</strong> drivers for the RPi GPU. This means <a href="http://doc.qt.io/qt-5/qtopengl-index.html">Qt OpenGL</a> and <a href="http://doc.qt.io/qt-5/qtqml-index.html">QML</a> applications will work when using the <a href="http://doc.qt.io/qt-5/embedded-linux.html">eglfs</a> platform plugin. </p>
+
+<p>I am using the official Yocto <a href="http://git.yoctoproject.org/cgit/cgit.cgi/meta-raspberrypi">meta-raspberrypi</a> layer, but have updated recipes for the Linux kernel and <a href="https://github.com/raspberrypi/firmware">gpu firmware</a>
+ to keep them more current. I also have occasional ‘fixes’ to other 
+components, sometimes for bugs, but often just because I don’t like the 
+upstream defaults.</p>
+
+<p>I have access to all of the RPi boards and at one time or another have tested these builds with all of them including the <a href="https://www.raspberrypi.org/products/compute-module/">RPi CM/CM3</a> modules.</p>
+
+<p>Most of the time I only test meta-rpi with the RPi3 and RPi0-W boards.</p>
+
+<h3 id="downloads">Downloads</h3>
+
+<p>If you want a quick look at the resulting systems, you can download some pre-built images <a href="http://www.jumpnowtek.com/downloads/rpi/">here</a>. </p>
+
+<p>Instructions for installing onto an SD card are in the <a href="http://www.jumpnowtek.com/downloads/rpi/README.txt">README</a>.</p>
+
+<p>The login user is <strong>root</strong> with password <strong>jumpnowtek</strong>. </p>
+
+<p>You should change that password.</p>
+
+<p>All systems are setup to use a serial console. For the RPi’s that 
+have it, a dhcp client will run on the ethernet interface and there is 
+an ssh server running.</p>
+
+<p><strong>Note:</strong> There is a custom firewall rule that will lock your IP out for 1 minute if you fail to login with ssh after 3 attempts.</p>
+
+<h3 id="system-info">System Info</h3>
+
+<p>The Yocto version is <strong>2.4</strong>, the <code>[rocko]</code> branch.</p>
+
+<p>The <strong>4.9.65</strong> Linux kernel comes from the <a href="https://github.com/raspberrypi/linux">github.com/raspberrypi/linux</a> repository.</p>
+
+<p>These are <strong>sysvinit</strong> systems using <a href="https://wiki.gentoo.org/wiki/Project:Eudev">eudev</a>.</p>
+
+<p>The Qt version is <strong>5.9.2</strong> There is no <strong>X11</strong> and no desktop installed. <a href="http://www.qt.io/">Qt</a> GUI applications can be run fullscreen using one of the <a href="http://doc.qt.io/qt-5/embedded-linux.html">Qt embedded linux plugins</a> like <strong>eglfs</strong> or <strong>linuxfb</strong>, both are provided. The default is <strong>eglfs</strong>.</p>
+
+<p>Python <strong>2.7.13</strong> and <strong>3.5.3</strong> are both installed, each with a number of modules included.</p>
+
+<p><a href="http://elinux.org/Omxplayer">omxplayer</a> is installed for playing video and audio from the command line, hardware accelerated.</p>
+
+<p><a href="https://www.raspberrypi.org/documentation/usage/camera/raspicam/README.md">Raspicam</a> the command line tool for using the Raspberry Pi camera module is installed.</p>
+
+<p>There is an example image that I use for a couple of Raspberry Pi <a href="http://www.jumpnowtek.com/rpi/Raspberry-Pi-Pandora-music-player.html">music systems</a>. They use either an <a href="http://www.iqaudio.co.uk/home/9-pi-digiamp-0712411999650.html">IQaudIO Pi-DigiAMP+</a> or <a href="https://www.hifiberry.com/ampplus/">HiFiBerry Amp+</a> add-on board and <a href="https://6xq.net/pianobar/">pianobar</a>, a console-based client for <a href="http://www.pandora.com/">Pandora</a> internet radio.</p>
+
+<p>The Adafruit <a href="https://www.adafruit.com/products/2441">PiTFT 3.5”</a> and <a href="https://www.adafruit.com/products/1601">PiTFT 2.8”</a> resistive touchscreens work. Support for some other TFT displays is included, but I haven’t tested them.</p>
+
+<p><a href="https://github.com/AndrewFromMelbourne/raspi2fb">Raspi2fb</a>
+ is included for mirroring the GPU framebuffer to the small TFT 
+displays. This allows for running Qt GUI applications on the TFTs.</p>
+
+<h3 id="ubuntu-setup">Ubuntu Setup</h3>
+
+<p>I primarily use <strong>16.04</strong> 64-bit servers for builds. Other versions should work.</p>
+
+<p>You will need at least the following packages installed</p>
+
+<pre><code>build-essential
+chrpath
+diffstat
+libncurses5-dev
+texinfo
+</code></pre>
+
+<p>For <strong>16.04</strong> you also need to install the <strong>python 2.7</strong> package</p>
+
+<pre><code>python2.7
+</code></pre>
+
+<p>And then create a link for it in <code>/usr/bin</code></p>
+
+<pre><code>sudo ln -sf /usr/bin/python2.7 /usr/bin/python
+</code></pre>
+
+<p>For all versions of Ubuntu, you should change the default Ubuntu shell from <strong>dash</strong> to <strong>bash</strong> by running this command from a shell</p>
+
+<pre><code>sudo dpkg-reconfigure dash
+</code></pre>
+
+<p>Choose <strong>No</strong> to dash when prompted.</p>
+
+<h3 id="fedora-setup">Fedora Setup</h3>
+
+<p>I have used a <strong>Fedora 25</strong> 64-bit workstation.</p>
+
+<p>The extra packages I needed to install for Yocto were</p>
+
+<pre><code>chrpath
+perl-bignum
+perl-Thread-Queue
+texinfo
+</code></pre>
+
+<p>and the package group</p>
+
+<pre><code>Development Tools
+</code></pre>
+
+<p>There might be more packages required since I had already installed <strong>qt-creator</strong> and the <strong>Development Tools</strong> group before I did the first build with Yocto.</p>
+
+<p>Fedora already uses <strong>bash</strong> as the shell. </p>
+
+<h3 id="clone-the-dependency-repositories">Clone the dependency repositories</h3>
+
+<p>For all upstream repositories, use the <code>[rocko]</code> branch.</p>
+
+<p>The directory layout I am describing here is my preference. All of 
+the paths to the meta-layers are configurable. If you choose something 
+different, adjust the following instructions accordingly.</p>
+
+<p>First the main Yocto project <strong>poky</strong> layer</p>
+
+<pre><code>~# git clone -b rocko git://git.yoctoproject.org/poky.git poky-rocko
+</code></pre>
+
+<p>Then the dependency layers under that</p>
+
+<pre><code>~$ cd poky-rocko
+~/poky-rocko$ git clone -b rocko git://git.openembedded.org/meta-openembedded
+~/poky-rocko$ git clone -b rocko https://github.com/meta-qt5/meta-qt5
+~/poky-rocko$ git clone -b rocko git://git.yoctoproject.org/meta-security
+~/poky-rocko$ git clone -b rocko git://git.yoctoproject.org/meta-raspberrypi
+</code></pre>
+
+<p>These repositories shouldn’t need modifications other then periodic 
+updates and can be reused for different projects or different boards.</p>
+
+<h3 id="clone-the-meta-rpi-repository">Clone the meta-rpi repository</h3>
+
+<p>Create a separate sub-directory for the <strong>meta-rpi</strong> repository before cloning. This is where you will be doing your customization.</p>
+
+<pre><code>~$ mkdir ~/rpi
+~$ cd ~/rpi
+~/rpi$ git clone -b rocko git://github.com/jumpnow/meta-rpi
+</code></pre>
+
+<p>The <code>meta-rpi/README.md</code> file has the last commits from 
+the dependency repositories that I tested. You can always checkout those
+ commits explicitly if you run into problems.</p>
+
+<h3 id="initialize-the-build-directory">Initialize the build directory</h3>
+
+<p>Again much of the following are only my conventions.</p>
+
+<p>Choose a build directory. I tend to do this on a per board and/or per
+ project basis so I can quickly switch between projects. For this 
+example I’ll put the build directory under <code>~/rpi/</code> with the <code>meta-rpi</code> layer.</p>
+
+<p>You could manually create the directory structure like this</p>
+
+<pre><code>$ mkdir -p ~/rpi/build/conf
+</code></pre>
+
+<p>Or you could use the Yocto environment script <strong>oe-init-build-env</strong> like this passing in the path to the build directory</p>
+
+<pre><code>~$ source poky-rocko/oe-init-build-env ~/rpi/build
+</code></pre>
+
+<p>The Yocto environment script will create the build directory if it does not already exist.</p>
+
+<h3 id="customize-the-configuration-files">Customize the configuration files</h3>
+
+<p>There are some sample configuration files in the <strong>meta-rpi/conf</strong> directory.</p>
+
+<p>Copy them to the <strong>build/conf</strong> directory (removing the ‘-sample’)</p>
+
+<pre><code>~/rpi$ cp meta-rpi/conf/local.conf.sample build/conf/local.conf
+~/rpi$ cp meta-rpi/conf/bblayers.conf.sample build/conf/bblayers.conf
+</code></pre>
+
+<p>If you used the <strong>oe-init-build-env</strong> script to create the build directory, it generated some generic configuration files in the <strong>build/conf</strong> directory. If you want to look at them, save them with a different name before overwriting.</p>
+
+<p>It is not necessary, but you may want to customize the configuration files before your first build.</p>
+
+<p><strong>Warning:</strong> Do not use the ‘<strong>~</strong>’ character when defining directory paths in the Yocto configuration files. </p>
+
+<h3 id="edit-bblayersconf">Edit bblayers.conf</h3>
+
+<p>In <strong>bblayers.conf</strong> file replace <strong>${HOME}</strong>
+ with the appropriate path to the meta-layer repositories on your system
+ if you modified any of the paths in the previous instructions.</p>
+
+<p><strong>WARNING:</strong> Do not include <strong>meta-yocto-bsp</strong> in your <strong>bblayers.conf</strong>. The Yocto BSP requirements for the Raspberry Pi are in <strong>meta-raspberrypi</strong>.</p>
+
+<p>For example, if your directory structure does not look exactly like this, you will need to modify <code>bblayers.conf</code></p>
+
+<pre><code>~/poky-rocko/
+     meta-openembedded/
+     meta-qt5/
+     meta-raspberrypi
+     meta-security
+     ...
+
+~/rpi/
+    meta-rpi/
+    build/
+        conf/
+</code></pre>
+
+<h3 id="edit-localconf">Edit local.conf</h3>
+
+<p>The variables you may want to customize are the following:</p>
+
+<ul>
+  <li>MACHINE</li>
+  <li>TMPDIR</li>
+  <li>DL_DIR</li>
+  <li>SSTATE_DIR</li>
+</ul>
+
+<p>The defaults for all of these work fine with the exception of <strong>MACHINE</strong>.</p>
+
+<h5 id="machine">MACHINE</h5>
+
+<p>The <strong>MACHINE</strong> variable is used to determine the target architecture and various compiler tuning flags.</p>
+
+<p>See the conf files under <code>meta-raspberrypi/conf/machine</code> for details.</p>
+
+<p>The choices for <strong>MACHINE</strong> are</p>
+
+<ul>
+  <li>raspberrypi (BCM2835)</li>
+  <li>raspberrypi0 (BCM2835)</li>
+  <li>raspberrypi0-wifi (BCM2835)</li>
+  <li>raspberrypi2 (BCM2836 or BCM2837 v1.2+)</li>
+  <li>raspberrypi3 (BCM2837)</li>
+  <li>raspberrypi-cm (BCM2835)</li>
+  <li>raspberrypi-cm3 (BCM2837)</li>
+</ul>
+
+<p>You can only build for one type of <strong>MACHINE</strong> at a time.</p>
+
+<p>There are really just two <em>tuning</em> families using the default Yocto configuration files</p>
+
+<ul>
+  <li>arm1176jzfshf - for the the BCM2835 boards</li>
+  <li>cortexa7thf-neon-vfpv4 - for the BCM2836 and BCM2837 boards</li>
+</ul>
+
+<p>Boards in the same family can generally run the same software.</p>
+
+<p>One exception is <strong>u-boot</strong>, which is NOT the default for the systems being built here.</p>
+
+<p>And one reason you would want to use <strong>u-boot</strong> with the RPis is to work with <a href="https://mender.io/">Mender</a>.</p>
+
+<h5 id="tmpdir">TMPDIR</h5>
+
+<p>This is where temporary build files and the final build binaries will end up. Expect to use at least <strong>50GB</strong>.</p>
+
+<p>The default location is under the <strong>build</strong> directory, in this example <strong>~/rpi/build/tmp</strong>.</p>
+
+<p>If you specify an alternate location as I do in the example conf file
+ make sure the directory is writable by the user running the build.</p>
+
+<h5 id="dldir">DL_DIR</h5>
+
+<p>This is where the downloaded source files will be stored. You can 
+share this among configurations and builds so I always create a general 
+location for this outside the project directory. Make sure the build 
+user has write permission to the directory you decide on.</p>
+
+<p>The default location is in the <strong>build</strong> directory, <strong>~/rpi/build/sources</strong>.</p>
+
+<h5 id="sstatedir">SSTATE_DIR</h5>
+
+<p>This is another Yocto build directory that can get pretty big, greater then <strong>8GB</strong>. I often put this somewhere else other then my home directory as well.</p>
+
+<p>The default location is in the <strong>build</strong> directory, <strong>~/rpi/build/sstate-cache</strong>.</p>
+
+<h3 id="run-the-build">Run the build</h3>
+
+<p>You need to <a href="http://stackoverflow.com/questions/4779756/what-is-the-difference-between-source-script-sh-and-script-sh">source</a> the Yocto environment into your shell before you can use <a href="http://www.yoctoproject.org/docs/2.1/bitbake-user-manual/bitbake-user-manual.html">bitbake</a>. The <strong>oe-init-build-env</strong> will not overwrite your customized conf files.</p>
+
+<pre><code>~$ source poky-rocko/oe-init-build-env ~/rpi/build
+
+### Shell environment set up for builds. ###
+
+You can now run 'bitbake '
+
+Common targets are:
+    core-image-minimal
+    core-image-sato
+    meta-toolchain
+    meta-toolchain-sdk
+    adt-installer
+    meta-ide-support
+
+You can also run generated qemu images with a command like 'runqemu qemux86'
+~/rpi/build$
+</code></pre>
+
+<p>I don’t use any of those <em>Common targets</em>, but instead always write my own custom image recipes.</p>
+
+<p>The <strong>meta-rpi</strong> layer has some examples under <strong>meta-rpi/images/</strong>. </p>
+
+<h3 id="build">Build</h3>
+
+<p>To build the <strong>console-image</strong> run the following command</p>
+
+<pre><code>~/rpi/build$ bitbake console-image
+</code></pre>
+
+<p>You may occasionally run into build errors related to packages that 
+either failed to download or sometimes out of order builds. The easy 
+solution is to clean the failed package and rerun the build again.</p>
+
+<p>For instance if the build for <strong>zip</strong> failed for some reason, I would run this</p>
+
+<pre><code>~/rpi/build$ bitbake -c cleansstate zip
+~/rpi/build$ bitbake zip
+</code></pre>
+
+<p>And then continue with the full build.</p>
+
+<pre><code>~/rpi/build$ bitbake console-image
+</code></pre>
+
+<p>To build the <code>qt5-image</code> it would be</p>
+
+<pre><code>~/rpi/build$ bitbake qt5-image
+</code></pre>
+
+<p>The <strong>cleansstate</strong> command (with two s’s) works for image recipes as well.</p>
+
+<p>The image files won’t get deleted from the <strong>TMPDIR</strong> until the next time you build.</p>
+
+<h3 id="copying-the-binaries-to-an-sd-card-or-emmc">Copying the binaries to an SD card (or eMMC)</h3>
+
+<p>After the build completes, the bootloader, kernel and rootfs image files can be found in **<tmpdir>/deploy/images/$MACHINE** with **MACHINE** coming from your **local.conf**.</tmpdir></p>
+
+<p>The <strong>meta-rpi/scripts</strong> directory has some helper scripts to format and copy the files to a microSD card.</p>
+
+<p>See <a href="http://www.jumpnowtek.com/rpi/Working-with-the-raspberry-pi-compute.html">this post</a> for an additional first step required for the <a href="https://www.raspberrypi.org/products/compute-module/">RPi Compute</a> eMMC.</p>
+
+<h4 id="mk2partssh">mk2parts.sh</h4>
+
+<p>This script will partition an SD card with the minimal 2 partitions required for the RPI.</p>
+
+<p>Insert the microSD into your workstation and note where it shows up.</p>
+
+<p><a href="http://linux.die.net/man/8/lsblk">lsblk</a> is convenient for finding the microSD card. </p>
+
+<p>For example</p>
+
+<pre><code>~/rpi/meta-rpi$ lsblk
+NAME    MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+sda       8:0    0 931.5G  0 disk
+|-sda1    8:1    0  93.1G  0 part /
+|-sda2    8:2    0  93.1G  0 part /home
+|-sda3    8:3    0  29.8G  0 part [SWAP]
+|-sda4    8:4    0     1K  0 part
+|-sda5    8:5    0   100G  0 part /oe5
+|-sda6    8:6    0   100G  0 part /oe6
+|-sda7    8:7    0   100G  0 part /oe7
+|-sda8    8:8    0   100G  0 part /oe8
+|-sda9    8:9    0   100G  0 part /oe9
+`-sda10   8:10   0 215.5G  0 part /oe10
+sdb       8:16   1   7.4G  0 disk
+|-sdb1    8:17   1    64M  0 part
+`-sdb2    8:18   1   7.3G  0 part
+</code></pre>
+
+<p>So I will use <strong>sdb</strong> for the card on this machine.</p>
+
+<p>It doesn’t matter if some partitions from the SD card are mounted. The <strong>mk2parts.sh</strong> script will unmount them.</p>
+
+<p><strong>WARNING</strong>: This script will format any disk on your workstation so make sure you choose the SD card.</p>
+
+<pre><code>~$ cd ~/rpi/meta-rpi/scripts
+~/rpi/meta-rpi/scripts$ sudo ./mk2parts.sh sdb
+</code></pre>
+
+<p>You only have to format the SD card once.</p>
+
+<h4 id="temporary-mount-point">Temporary mount point</h4>
+
+<p>You will need to create a mount point on your workstation for the copy scripts to use.</p>
+
+<p>This is the default</p>
+
+<pre><code>~$ sudo mkdir /media/card
+</code></pre>
+
+<p>You only have to create this directory once.</p>
+
+<p>If you don’t want that location, you will have to edit the following scripts to use the mount point you choose.</p>
+
+<h4 id="copybootsh">copy_boot.sh</h4>
+
+<p>This script copies the GPU firmware, the Linux kernel, dtbs and 
+overlays, config.txt and cmdline.txt to the boot partition of the SD 
+card.</p>
+
+<p>This <strong>copy_boot.sh</strong> script needs to know the <strong>TMPDIR</strong> to find the binaries. It looks for an environment variable called <strong>OETMP</strong>.</p>
+
+<p>For instance, if I had this in <code>build/conf/local.conf</code></p>
+
+<pre><code>TMPDIR = "/oe8/rpi/tmp-rocko"
+</code></pre>
+
+<p>Then I would export this environment variable before running <code>copy_boot.sh</code></p>
+
+<pre><code>~/rpi/meta-rpi/scripts$ export OETMP=/oe8/rpi/tmp-rocko
+</code></pre>
+
+<p>If you didn’t override the default <strong>TMPDIR</strong> in <code>local.conf</code>, then set it to the default <strong>TMPDIR</strong></p>
+
+<pre><code>~/rpi/meta-rpi/scripts$ export OETMP=~/rpi/build/tmp
+</code></pre>
+
+<p>The <code>copy_boot.sh</code> script also needs a <strong>MACHINE</strong> environment variable specifying the type of RPi board.</p>
+
+<pre><code>~/rpi/meta-rpi/scripts$ export MACHINE=raspberrypi2
+</code></pre>
+
+<p>or</p>
+
+<pre><code>~/rpi/meta-rpi/scripts$ export MACHINE=raspberrypi
+</code></pre>
+
+<p>Then run the <strong>copy_boot.sh</strong> script passing the location of SD card</p>
+
+<pre><code>~/rpi/meta-rpi/scripts$ ./copy_boot.sh sdb
+</code></pre>
+
+<p>This script should run very fast.</p>
+
+<p>If you want to customize the <strong>config.txt</strong> or <strong>cmdline.txt</strong> files for the system, you can place either of those files in the <strong>meta-rpi/scripts</strong> directory and the <strong>copy_boot.sh</strong> script will copy them as well.</p>
+
+<p>Take a look at the script if this is unclear.</p>
+
+<h4 id="copyrootfssh">copy_rootfs.sh</h4>
+
+<p>This script copies the root file system to the second partition of the SD card.</p>
+
+<p>The <strong>copy_rootfs.sh</strong> script needs the same <strong>OETMP</strong> and <strong>MACHINE</strong> environment variables.</p>
+
+<p>The script accepts an optional command line argument for the image type, for example <strong>console</strong> or <strong>qt5</strong>. The default is <strong>console</strong> if no argument is provided.</p>
+
+<p>The script also accepts a <strong>hostname</strong> argument if you want the host name to be something other then the default <strong>MACHINE</strong>.</p>
+
+<p>Here’s an example of how you would run <strong>copy_rootfs.sh</strong></p>
+
+<pre><code>~/rpi/meta-rpi/scripts$ ./copy_rootfs.sh sdb console
+</code></pre>
+
+<p>or</p>
+
+<pre><code>~/rpi/meta-rpi/scripts$ ./copy_rootfs.sh sdb qt5 rpi3
+</code></pre>
+
+<p>The <strong>copy_rootfs.sh</strong> script will take longer to run and depends a lot on the quality of your SD card. With a good <strong>Class 10</strong> card it should take less then 30 seconds.</p>
+
+<p>The copy scripts will <strong>NOT</strong> unmount partitions 
+automatically. If an SD card partition is already mounted, the script 
+will complain and abort. This is for safety, mine mostly, since I run 
+these scripts many times a day on different machines and the SD cards 
+show up in different places.</p>
+
+<p>Here’s a realistic example session where I want to copy already built images to a second SD card that I just inserted.</p>
+
+<pre><code>~$ sudo umount /dev/sdb1
+~$ sudo umount /dev/sdb2
+~$ export OETMP=/oe8/rpi/tmp-rocko
+~$ export MACHINE=raspberrypi2
+~$ cd rpi/meta-rpi/scripts
+~/rpi/meta-rpi/scripts$ ./copy_boot.sh sdb
+~/rpi/meta-rpi/scripts$ ./copy_rootfs.sh sdb console rpi3
+</code></pre>
+
+<p>Once past the development stage I usually wrap all of the above in another script for convenience.</p>
+
+<p>Both <strong>copy_boot.sh</strong> and <strong>copy_rootfs.sh</strong> are simple scripts, easily customized. </p>
+
+<h4 id="some-custom-package-examples">Some custom package examples</h4>
+
+<p><a href="https://github.com/scottellis/spiloop">spiloop</a> is a <strong>spidev</strong> test application.</p>
+
+<p>The <strong>bitbake recipe</strong> that builds and packages <strong>spiloop</strong> is here</p>
+
+<pre><code>meta-rpi/recipes-misc/spiloop/spiloop_git.bb
+</code></pre>
+
+<p>Use it to test the <strong>spidev</strong> driver before and after placing a jumper between pins <strong>19</strong> and <strong>21</strong>.</p>
+
+<p><a href="https://github.com/scottellis/tspress">tspress</a> is a Qt5 GUI application installed with the <code>qt5-image</code>. I use it for testing touchscreens.</p>
+
+<p>The recipe is here and can be used a guide for your own applications.</p>
+
+<pre><code>meta-rpi/recipes-qt/tspress/tspress_git.bb
+</code></pre>
+
+<p>Check the <strong>README</strong> in the <a href="https://github.com/scottellis/tspress">tspress</a> repository for usage.</p>
+
+<h4 id="adding-additional-packages">Adding additional packages</h4>
+
+<p>To display the list of available recipes from the <strong>meta-layers</strong> included in <strong>bblayers.conf</strong></p>
+
+<pre><code>~$ source poky-rocko/oe-init-build-env ~/rpi/build
+
+~/rpi/build$ bitbake -s
+</code></pre>
+
+<p>Once you have the recipe name, you need to find what packages the recipe produces. Use the <strong>oe-pkgdata-util</strong> utility for this.</p>
+
+<p>For instance, to see the packages produced by the <strong>openssh</strong> recipe</p>
+
+<pre><code>~/rpi/build$ oe-pkgdata-util list-pkgs -p openssh
+openssh-keygen
+openssh-scp
+openssh-ssh
+openssh-sshd
+openssh-sftp
+openssh-misc
+openssh-sftp-server
+openssh-dbg
+openssh-dev
+openssh-doc
+openssh
+</code></pre>
+
+<p>These are the individual packages you could add to your image recipe.</p>
+
+<p>You can also use <strong>oe-pkgdata-util</strong> to check the individual files a package will install.</p>
+
+<p>For instance, to see the files for the <strong>openssh-sshd</strong> package</p>
+
+<pre><code>~/rpi/build$ oe-pkgdata-util list-pkg-files openssh-sshd
+openssh-sshd:
+        /etc/default/volatiles/99_sshd
+        /etc/init.d/sshd
+        /etc/ssh/moduli
+        /etc/ssh/sshd_config
+        /etc/ssh/sshd_config_readonly
+        /usr/libexec/openssh/sshd_check_keys
+        /usr/sbin/sshd
+</code></pre>
+
+<p>For a package to be installed in your image it has to get into the <strong>IMAGE_INSTALL</strong> variable some way or another. See the example image recipes for some common conventions.</p>
+
+<h4 id="playing-videos">Playing videos</h4>
+
+<p>The RPi project has a hardware-accelerated, command-line video player called <a href="http://elinux.org/Omxplayer">omxplayer</a>.</p>
+
+<p>Here’s a reasonably sized example from the <a href="https://www.blender.org/">Blender</a> project to test</p>
+
+<pre><code>root@rpi3:~# wget https://download.blender.org/demo/movies/Cycles_Demoreel_2015.mov
+</code></pre>
+
+<p>You can play it like this (<strong>-o hdmi</strong> for hdmi audio)</p>
+
+<pre><code>root@rpi3:~# omxplayer -o hdmi Cycles_Demoreel_2015.mov
+Video codec omx-h264 width 1920 height 1080 profile 77 fps 25.000000
+Audio codec aac channels 2 samplerate 48000 bitspersample 16
+Subtitle count: 0, state: off, index: 1, delay: 0
+V:PortSettingsChanged: 1920x1080@25.00 interlace:0 deinterlace:0 anaglyph:0 par:1.25 display:0 layer:0 alpha:255 aspectMode:0
+</code></pre>
+
+<p>If you get errors like this</p>
+
+<pre><code>COMXAudio::Decode timeout
+</code></pre>
+
+<p>Increase memory allocated to the GPU in <code>config.txt</code></p>
+
+<pre><code>gpu_mem=128
+</code></pre>
+
+<p>The RPi GPU can support more then one display, (the DSI display is 
+the default), though apps have to be built specifically to support the 
+second display. Omxplayer is an app with this ability.</p>
+
+<p>So for example, with the RPi DSI touchscreen and an HDMI display 
+attached at the same time, you could run a video on the HDMI display 
+from the touchscreen this way</p>
+
+<pre><code>root@rpi3:~# omxplayer --display=5 -o hdmi Cycles_Demoreel_2015.mov
+Video codec omx-h264 width 1920 height 1080 profile 77 fps 25.000000
+Audio codec aac channels 2 samplerate 48000 bitspersample 16
+Subtitle count: 0, state: off, index: 1, delay: 0
+V:PortSettingsChanged: 1920x1080@25.00 interlace:0 deinterlace:0 anaglyph:0 par:1.25 display:5 layer:0 alpha:255 aspectMode:0
+</code></pre>
+
+<p>I was not able to run a <strong>eglfs</strong> Qt app on the RPi DSI display while simultaneously playing a movie with omxplayer on the HDMI display. Perhaps a <strong>linuxfb</strong> Qt app that doesn’t use the GPU could run simultaneously. Some more testing is needed.</p>
+
+<h4 id="using-the-raspberry-pi-camera">Using the Raspberry Pi Camera</h4>
+
+<p>The <a href="https://www.raspberrypi.org/documentation/raspbian/applications/camera.md">raspicam</a> command line tools are installed with the <strong>console-image</strong> or any image that includes the <strong>console-image</strong></p>
+
+<ul>
+  <li>raspistill</li>
+  <li>raspivid</li>
+  <li>raspiyuv</li>
+</ul>
+
+<p>To enable the RPi camera, add or edit the following in the RPi configuration file <strong>config.txt</strong></p>
+
+<pre><code>start_x=1
+gpu_mem=128
+disable_camera_led=1   # optional for disabling the red LED on the camera
+</code></pre>
+
+<p>To get access to <strong>config.txt</strong>, mount the boot partition first</p>
+
+<pre><code>root@rpi# mkdir /mnt/fat
+root@rpi# mount /dev/mmcblk0p1 /mnt/fat
+</code></pre>
+
+<p>Then edit, save and reboot.</p>
+
+<pre><code>root@rpi# vi /mnt/fat/config.txt
+</code></pre>
+
+<p>or</p>
+
+<pre><code>root@rpi# nano /mnt/fat/config.txt
+</code></pre>
+
+<p>A quick test of the camera, flipping the image because of the way I 
+have my camera mounted and a timeout of zero so it runs until stopped.</p>
+
+<pre><code>root@rpi2# raspistill -t 0 -hf -vf
+</code></pre>
+
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Jumpnow Technologies, LLC<br>
+              </p>
+            </div>
+          </div>
+        </div>
+
+    
+
+</body></html>
